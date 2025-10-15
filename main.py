@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import List, Literal, Optional
 import ollama
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Local LLM API (uv)")
 
@@ -19,6 +20,11 @@ class ChatRequest(BaseModel):
     temperature: Optional[float] = 0.7
     top_p: Optional[float] = 0.9
     max_tokens: Optional[int] = None
+
+
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+
+
 
 @app.post("/chat")
 def chat(req: ChatRequest):
@@ -54,3 +60,4 @@ def chat(req: ChatRequest):
             return StreamingResponse(token_stream(), media_type="text/plain")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
