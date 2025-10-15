@@ -34,7 +34,6 @@ class ChatRequest(BaseModel):
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 
-
 @app.post("/chat")
 def chat(req: ChatRequest):
     try:
@@ -70,4 +69,3 @@ def chat(req: ChatRequest):
         return StreamingResponse(token_stream(), media_type="text/plain")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
-    
