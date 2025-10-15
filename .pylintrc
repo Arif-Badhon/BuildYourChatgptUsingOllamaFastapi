@@ -1,0 +1,19 @@
+[MASTER]
+ignore=__pycache__,static
+jobs=1
+
+[MESSAGES CONTROL]
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+
+[FORMAT]
+max-line-length=100
+
+[REPORTS]
+output-format = colorized
+
+[TYPECHECK]
+# If you use third-party libs not installed in CI, add them here to avoid false positives
+ignored-modules=ollama

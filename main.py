@@ -1,17 +1,26 @@
+from typing import List, Literal, Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
-from typing import List, Literal, Optional
-import ollama
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+import ollama
+
 
 app = FastAPI(title="Local LLM API (uv)")
 
 Role = Literal["system", "user", "assistant"]
 
+
+app = FastAPI(title="Local LLM API (uv)")
+
+Role = Literal["system", "user", "assistant"]
+
+
 class Message(BaseModel):
     role: Role
     content: str
+
 
 class ChatRequest(BaseModel):
     model: str = Field(default="gemma3:1b")
@@ -36,28 +45,29 @@ def chat(req: ChatRequest):
                 options={
                     "temperature": req.temperature,
                     "top_p": req.top_p,
-                    **({"num_predict": req.max_tokens} if req.max_tokens else {})
+                    **({"num_predict": req.max_tokens} if req.max_tokens else {}),
                 },
                 stream=False,
             )
             return {"content": resp["message"]["content"]}
-        else:
-            def token_stream():
-                stream = ollama.chat(
-                    model=req.model,
-                    messages=[m.dict() for m in req.messages],
-                    options={
-                        "temperature": req.temperature,
-                        "top_p": req.top_p,
-                        **({"num_predict": req.max_tokens} if req.max_tokens else {})
-                    },
-                    stream=True,
-                )
-                for chunk in stream:
-                    part = chunk.get("message", {}).get("content", "")
-                    if part:
-                        yield part
-            return StreamingResponse(token_stream(), media_type="text/plain")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
+        def token_stream():
+            stream = ollama.chat(
+                model=req.model,
+                messages=[m.dict() for m in req.messages],
+                options={
+                    "temperature": req.temperature,
+                    "top_p": req.top_p,
+                    **({"num_predict": req.max_tokens} if req.max_tokens else {}),
+                },
+                stream=True,
+            )
+            for chunk in stream:
+                part = chunk.get("message", {}).get("content", "")
+                if part:
+                    yield part
+
+        return StreamingResponse(token_stream(), media_type="text/plain")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    

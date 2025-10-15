@@ -7,7 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        # Project declares requires-python = ">=3.11" in pyproject.toml
+        # Keep CI Python versions aligned with project requirement to avoid false failures
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -17,6 +19,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # Install pylint only; project has no build-system declared in pyproject.toml,
+        # so avoid calling `pip install .` which may fail. If you add a build-system,
+        # change this to install project packages as needed.
         pip install pylint
     - name: Analysing the code with pylint
       run: |

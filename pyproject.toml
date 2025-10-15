@@ -7,4 +7,12 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi[standard]>=0.119.0",
     "ollama>=0.6.0",
+    "pylint>=4.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "pylint>=4.0.1",
+    "ruff>=0.14.0",
 ]
