@@ -1,28 +1,34 @@
-name: Pylint
+name: CI
 
-on: [push]
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Project declares requires-python = ">=3.11" in pyproject.toml
-        # Keep CI Python versions aligned with project requirement to avoid false failures
-        python-version: ["3.11"]
+    
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        version: "latest"
+    
+    - name: Set up Python
+      run: uv python install 3.11
+    
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        # Install pylint only; project has no build-system declared in pyproject.toml,
-        # so avoid calling `pip install .` which may fail. If you add a build-system,
-        # change this to install project packages as needed.
-        pip install pylint
-    - name: Analysing the code with pylint
-      run: |
-        pylint $(git ls-files '*.py')
+      run: uv sync
+    
+    - name: Run pylint
+      run: uv run pylint $(git ls-files '*.py')
+    
+    - name: Run ruff (optional)
+      run: uv run ruff check .
+    
+    - name: Run black check (optional)
+      run: uv run black --check .
